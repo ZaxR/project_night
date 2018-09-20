@@ -1,2 +1,5 @@
+meetup-api
+natsort
+numpy
 pandas
 prompt_toolkit
