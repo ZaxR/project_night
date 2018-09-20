@@ -16,7 +16,7 @@ install_requires = ["meetup-api",
                     "natsort",
                     "numpy",
                     "pandas",
-                    "prompt_toolkit"]
+                    "prompt_toolkit>=2.0.4"]
 
 tests_require = ["pytest"]
 

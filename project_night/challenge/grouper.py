@@ -1,9 +1,9 @@
 from collections import defaultdict
 
 import pandas as pd
-from prompt_toolkit import prompt, AbortAction
+from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.contrib.completers import WordCompleter
+from prompt_toolkit.completion import WordCompleter
 
 
 class Challenge(object):
@@ -164,9 +164,10 @@ def grouper():
         try:
             event_data = prompt('> ',
                                 completer=command_completer,
-                                history=history,
-                                on_abort=AbortAction.RETRY)
+                                history=history)
             challenge.parse_event(event_data)
+        except KeyboardInterrupt:
+            continue
         except EOFError:
             break  # Control-D pressed.
 
