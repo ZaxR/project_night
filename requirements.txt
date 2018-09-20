@@ -1,0 +1,2 @@
+pandas
+prompt_toolkit
