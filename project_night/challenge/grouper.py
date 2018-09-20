@@ -7,7 +7,18 @@ from prompt_toolkit.completion import WordCompleter
 
 
 class Challenge(object):
+    """Challenge instance for grouping challenge participants based on experience.
 
+    Commands:
+        'add': Adds participants one at a time in a , format.
+        'bulk add': Loads participants and their experience levels from a csv file at the given path.
+        'clear': Clears all participants.
+        'group': Creates groups of a given size (default 4), evenly distributing experience levels (any int) across groups.
+        'list': Displays a list of participants.
+        'remove': Removes one or more participants, separating with commas.
+        'save': Saves the list of participants and their experience scores to a csv at the given path.
+
+    """
     def __init__(self, name: str):
         self.name = name
         self.participants = pd.DataFrame(columns=['Experience Score'])
