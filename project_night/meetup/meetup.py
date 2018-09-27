@@ -9,11 +9,13 @@ from natsort import humansorted, ns
 MEETUP_API_KEY = os.getenv('MEETUP_API_KEY', None)
 
 
-def get_valid_attendee_names(event_id=None, urlname='_ChiPy_', client=None):
+def get_valid_attendee_names(event_id=None, urlname='_ChiPy_', client=None, offset=0):
     client = client if client else meetup.api.Client(MEETUP_API_KEY)
     event_id = event_id if event_id else get_summary_event_list(client=client)[0]['id']
 
-    rsvps = client.GetRsvps(event_id=event_id, urlname=urlname)
+    rsvps = client.GetRsvps(event_id=event_id, urlname=urlname, offset=offset)
+    # check whether all pertinent data has been retrieved
+    all_data_flag = len(rsvps.results) < 200
 
     attendees = [{'Name': person['member']['name'],
                   'RSVP': person['response'],
@@ -31,7 +33,7 @@ def get_valid_attendee_names(event_id=None, urlname='_ChiPy_', client=None):
     # Human sort the names
     df['Security Name'] = humansorted(df['Security Name'].tolist(), alg=ns.IGNORECASE)
 
-    return df['Security Name']
+    return df['Security Name'], all_data_flag
 
 
 def get_summary_event_list(client=None):
