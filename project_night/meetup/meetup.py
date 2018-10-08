@@ -9,16 +9,25 @@ from natsort import humansorted, ns
 MEETUP_API_KEY = os.getenv('MEETUP_API_KEY', None)
 
 
-def get_valid_attendee_names(event_id=None, urlname='_ChiPy_', client=None):
+def get_valid_attendee_names(event_id=None, urlname='_ChiPy_', client=None, offset=0):
     client = client if client else meetup.api.Client(MEETUP_API_KEY)
     event_id = event_id if event_id else get_summary_event_list(client=client)[0]['id']
 
-    rsvps = client.GetRsvps(event_id=event_id, urlname=urlname)
+    all_data_flag = False
+    rsvps_list = []
+    while not all_data_flag:
+        rsvps = client.GetRsvps(event_id=event_id, urlname=urlname, offset=offset)
+        rsvps_list += rsvps.results
+        # check whether all pertinent data has been retrieved
+        all_data_flag = len(rsvps.results) < 200
+        if not all_data_flag:
+            offset += 1
 
+    # have all records, process data
     attendees = [{'Name': person['member']['name'],
                   'RSVP': person['response'],
                   'Given Name': person['answers'][0]}
-                 for person in rsvps.results]
+                 for person in rsvps_list]
 
     df = pd.DataFrame(attendees)
     df = df[df['RSVP'] != 'no']
@@ -31,7 +40,7 @@ def get_valid_attendee_names(event_id=None, urlname='_ChiPy_', client=None):
     # Human sort the names
     df['Security Name'] = humansorted(df['Security Name'].tolist(), alg=ns.IGNORECASE)
 
-    return df['Security Name']
+    return df['Security Name'], all_data_flag
 
 
 def get_summary_event_list(client=None):
