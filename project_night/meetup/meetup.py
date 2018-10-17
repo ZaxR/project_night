@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import meetup.api
 import numpy as np
@@ -11,11 +12,13 @@ MEETUP_API_KEY = os.getenv('MEETUP_API_KEY', None)
 
 def get_valid_attendee_names(event_id=None, urlname='_ChiPy_', client=None):
     client = client if client else meetup.api.Client(MEETUP_API_KEY)
-    event_id = event_id if event_id else get_summary_event_list(client=client)[0]['id']
+    event_info = event_id if event_id else get_summary_event_list(client=client)[0]
 
-    rsvps = client.GetRsvps(event_id=event_id, urlname=urlname)
+    rsvps = client.GetRsvps(event_id=event_info['id'], urlname=urlname)
 
-    attendees = [{'Name': person['member']['name'],
+    attendees = [{'User ID': person['member']['member_id'],
+                  'Name': person['member']['name'],
+                  'RSVPed On': datetime.fromtimestamp(person['mtime'] / 1000.0).strftime("%Y-%m-%d %H:%M:%S"),
                   'RSVP': person['response'],
                   'Given Name': person['answers'][0]}
                  for person in rsvps.results]
@@ -31,16 +34,20 @@ def get_valid_attendee_names(event_id=None, urlname='_ChiPy_', client=None):
     # Human sort the names
     df['Security Name'] = humansorted(df['Security Name'].tolist(), alg=ns.IGNORECASE)
 
-    return df['Security Name']
+    info_for_security = df[['User ID', 'Security Name', 'RSVPed On']]
+    info_for_security.set_index('User ID', inplace=True)
+
+    return info_for_security
 
 
 def get_summary_event_list(client=None):
     client = client if client else meetup.api.Client(MEETUP_API_KEY)
-
     events = client.GetEvents(group_urlname='_ChiPy_')
 
-    # todo time needs to be formatted into a readable form
-    return [{'name': e['name'], 'time': e['time'], 'id': e['id'], 'event_url': e['event_url']}
+    return [{'name': e['name'],
+             'time': datetime.fromtimestamp(e['time'] / 1000.0).strftime("%Y-%m-%d %H:%M:%S"),
+             'id': e['id'],
+             'event_url': e['event_url']}
             for e in events.results]
 
 
@@ -59,7 +66,7 @@ def get_summary_event_list(client=None):
 #              'RSVP': person['response'],
 #              # 'Guests': person['guests'],
 #              # 'RSVPed on': ,
-#              # 'Joined Group on': person['mtime'] ?
+#              # 'Joined Group on': ?
 #              # 'URL of Member Profile': mem_id_to_link[person['member']['member_id']]
 #              'Given Name': person['answers'][0]}
 
