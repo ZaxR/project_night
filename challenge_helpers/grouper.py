@@ -43,7 +43,6 @@ class Challenge(object):
     def bulk_add_participants(self, no_cmd_msg: str):
         """Loads participants from a csv file at the given path."""
         path = no_cmd_msg.strip()
-        # import pdb; pdb.set_trace()
         columns = ["Name", "Experience Score"]
         new_df = pd.read_csv(path, skiprows=1, names=columns)
         new_df = new_df.set_index("Name")
