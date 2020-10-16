@@ -21,7 +21,8 @@ class Challenge(object):
     """
     def __init__(self, name: str):
         self.name = name
-        self.participants = pd.DataFrame(columns=['Experience Score'])
+        df = pd.DataFrame(columns=['Name', 'Experience Score'])
+        self.participants = df.set_index("Name")
 
     def add_participant(self, no_cmd_msg: str):
         """Add participants one at a time in a <name>, <int> format."""
@@ -42,7 +43,21 @@ class Challenge(object):
     def bulk_add_participants(self, no_cmd_msg: str):
         """Loads participants from a csv file at the given path."""
         path = no_cmd_msg.strip()
-        new_df = pd.read_csv(path, index_col=0)
+        # import pdb; pdb.set_trace()
+        columns = ["Name", "Experience Score"]
+        new_df = pd.read_csv(path, skiprows=1, names=columns)
+        new_df = new_df.set_index("Name")
+
+        self.participants = pd.concat([self.participants[~self.participants.index.isin(new_df.index)], new_df])
+
+        print(f"Participants from {path} added.")
+
+    def bulk_add_participants_google_form(self, no_cmd_msg: str):
+        """Loads participants from a csv file at the given path."""
+        path = no_cmd_msg.strip()
+        columns = ["ts", "Name", "Experience Score"]
+        new_df = pd.read_csv(path, skiprows=1, usecols=[1,2], names=columns)
+        new_df = new_df.set_index("Name")
 
         self.participants = pd.concat([self.participants[~self.participants.index.isin(new_df.index)], new_df])
 
@@ -152,6 +167,7 @@ class Challenge(object):
 
         valid_commands = {"add ": self.add_participant,
                           "bulk add ": self.bulk_add_participants,
+                          "google add ": self.bulk_add_participants_google_form,
                           "clear": self.clear_participants,
                           "group": self.create_groups,
                           "list": self.list_participants,
@@ -167,7 +183,7 @@ class Challenge(object):
 
 
 def grouper():
-    command_completer = WordCompleter(['add', 'bulk add', 'clear', 'group', 'list', 'remove', 'save'], ignore_case=True)
+    command_completer = WordCompleter(['add', 'bulk add', 'google add', 'clear', 'group', 'list', 'remove', 'save'], ignore_case=True)
     history = InMemoryHistory()
     challenge = Challenge('Current')
 
