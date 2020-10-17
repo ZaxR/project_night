@@ -8,7 +8,7 @@ Scripts:
 
 ## Set up Environment
 
-1. Setup and activate Python version environment
+1. Setup and activate Python virtual environment
 1. `pip install -r requirements.txt`
 
 ## Running Challenge Helper
