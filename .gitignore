@@ -86,3 +86,12 @@ secrets.yaml
 
 # Csv files
 *.csv
+
+# virtual environment
+venv/
+
+# direnv
+.envrc
+
+# vscode
+.vscode/
